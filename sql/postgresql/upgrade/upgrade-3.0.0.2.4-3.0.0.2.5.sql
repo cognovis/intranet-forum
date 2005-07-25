@@ -1,4 +1,17 @@
 
+
+-- Add a new "view_topics_all" privilege
+-- to allow SenMan etc to see everything.
+
+select acs_privilege__create_privilege('view_topics_all','View all topics','');
+select acs_privilege__add_child('admin', 'view_topics_all');
+
+select im_priv_create('view_topics_all',        'Employees');
+select im_priv_create('view_topics_all',        'P/O Admins');
+select im_priv_create('view_topics_all',        'Project Managers');
+select im_priv_create('view_topics_all',        'Senior Managers');
+
+
 delete from im_view_columns where column_id=4006;
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (4006,40,NULL,'Due',
