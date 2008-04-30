@@ -1,6 +1,10 @@
+-- upgrade-3.1.4.0.0-3.2.0.0.0.sql
+
+SELECT acs_log__debug('/packages/intranet-forum/sql/postgresql/upgrade/upgrade-3.1.4.0.0-3.2.0.0.0.sql','');
+
 
 -- Fix a HTML rendering issue in the component definition
-
+--
 DELETE from im_component_plugin_user_map;
 
 DELETE from im_component_plugins
