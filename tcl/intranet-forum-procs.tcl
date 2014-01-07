@@ -83,10 +83,10 @@ ad_proc -public im_forum_notification_select {name {default ""}} {
     if {[string equal $default "none"]} { set checked_none "checked" }
 
     return "
-<input type=radio name=$name value=major $checked_major>Important Updates
-<input type=radio name=$name value=all $checked_all>All Updates
-<input type=radio name=$name value=none $checked_none>No Updates
-"
+	<input type=radio name=$name value=major $checked_major>[lang::message::lookup "" intranet-forum.Important_Updates "Important Updates"]
+	<input type=radio name=$name value=all $checked_all>[lang::message::lookup "" intranet-forum.All_Updates "All Updates"]
+	<input type=radio name=$name value=none $checked_none>[lang::message::lookup "" intranet-forum.No_Updates "No Updates"]
+    "
 }
 
 
@@ -122,7 +122,7 @@ ad_proc -public im_forum_scope_select {select_name user_id {default ""} } {
 	lappend option_list "<option value=staff $staff_selected>[_ intranet-forum.Staff_employees_only]</option>" 
     }
     if {[im_permission $user_id add_topic_client]} { 
-	lappend option_list "<option value=client $client_selected>Clients and PM only</option>" 
+	lappend option_list "<option value=client $client_selected>[lang::message::lookup "" intranet-forum.Clients_and_PM_only "Clients and PM only"]</option>" 
     }
     if {[im_permission $user_id add_topic_noncli]} { lappend option_list "<option value=not_client $not_client_selected>[_ intranet-forum.lt_Provider_project_memb]</option>" 
     }
@@ -186,7 +186,22 @@ ad_proc -public im_forum_potential_asignees {user_id object_id} {
     set admin_group_id [im_admin_group_id]
     set customer_group_id [im_customer_group_id]
     set employee_group_id [im_employee_group_id]
-    set admins [db_list get_admins "select member_id from group_distinct_member_map where group_id = :admin_group_id"]
+
+    set admins [db_list get_admins "
+	select	member_id
+	from 	group_distinct_member_map
+	where	group_id = :admin_group_id and
+		member_id not in (
+			-- Exclude deleted or disabled users
+			select	m.member_id
+			from	group_member_map m,
+				membership_rels mr
+			where	m.group_id = acs__magic_object_id('registered_users') and
+				m.rel_id = mr.rel_id and
+				m.container_id = m.group_id and
+				mr.member_state != 'approved'
+		)
+    "]
 
     if {![llength $admins]} {
         ad_return_complaint 1 "Bad System Configuration:<br>
@@ -457,7 +472,7 @@ ad_proc -public im_forum_potential_asignees {user_id object_id} {
     # are no permissions for a user to avoid an error
     lappend sql_list "select 0 as user_id, '' as user_name from dual"
 
-    set sql [join $sql_list " UNION "]
+    set sql "select * from ([join $sql_list " UNION "]) sql_list order by user_name"
     ns_log Notice "im_forum_potential_asignees: sql=$sql"
 
     set asignee_list [list]
