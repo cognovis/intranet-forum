@@ -34,7 +34,7 @@ ad_proc -public im_topic_type_id_reply { } { return 1190 }
 ad_proc -public im_package_forum_id {} {
     Returns the package id of the intranet-forum module
 } {
-    return [util_memoize "im_package_forum_id_helper"]
+    return [util_memoize im_package_forum_id_helper]
 }
 
 ad_proc -private im_package_forum_id_helper {} {
@@ -919,12 +919,12 @@ ad_proc -public im_forum_component {
 	# to "forum_list_". This allows the writers of future modules
 	# to define customized views for their new business objects.
 	set view_name "forum_list_$forum_type"
-	set view_id [util_memoize [list db_string get_view_id "select view_id from im_views where view_name = '$view_name'" -default 0]]
+	set view_id [im_view_id_from_name $view_name]
 
     } else {
 	# We have got an explicit view_name, probably through
 	# HTTP parameters.
-	set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name" -default 0]
+	set view_id [im_view_id_from_name $view_name]
     }
 
     if {0 == $view_id} {
