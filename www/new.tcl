@@ -28,6 +28,7 @@ ad_page_contract {
     {submit ""}
     {subject ""}
     {message ""}
+    {org_message ""}
     {topic_type_id 0}
     {asignee_id 0}
     {return_url ""}
